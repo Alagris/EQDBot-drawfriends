@@ -23,6 +23,7 @@ public class MainGUI extends Application {
 	
 	@Override
 	public void stop() throws Exception {
+		System.out.println("Bye!");
 		Main.disableLogging();
 		Main.stop();
 		super.stop();

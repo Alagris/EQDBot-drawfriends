@@ -60,6 +60,7 @@ public class EQDBot {
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
+		Main.logln("Downloading finished!");
 	}
 
 	private HtmlAnchor searchAcrossEqdDrawfriendPosts(final HtmlPage page, final boolean hiddenVersion, final boolean lowQuality) throws IOException {
