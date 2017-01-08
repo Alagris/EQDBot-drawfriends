@@ -52,3 +52,5 @@ https://github.com/Alagris/EQDBot-drawfriends/raw/master/EQDBot.zip
 
 Have fun. The source code is open. Send patches if you want. And also, sorry for so minimalist GUI. If you want access to hidden EQD content you will need to make friends with
 terminal. 
+
+PS. to guys from EQD: don't modify your page layout and HMTL tags too quickly :)
