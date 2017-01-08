@@ -14,7 +14,7 @@
       </ToolBar>
    </bottom>
    <center>
-      <ScrollPane fitToHeight="true" fitToWidth="true" prefViewportHeight="333.0" prefViewportWidth="600.0">
+      <ScrollPane fx:id="scrollPane" fitToHeight="true" fitToWidth="true" prefViewportHeight="333.0" prefViewportWidth="600.0">
          <content>
             <TextArea fx:id="logsArea" prefHeight="200.0" prefWidth="200.0" />
          </content>

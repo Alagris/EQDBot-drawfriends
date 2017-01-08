@@ -23,11 +23,19 @@ There are a few modes that this application can be run in:
 	so this mode is slower. if you don't care that much about extra pixels you download only
 	from EQD (often but not always in worse quality). To do it pass to terminal:
 	java - jar ./EQDbot.jar -lq 
+4. single post mode:
+	By default bot starts at link provided in 'startLink' file and proceed to older posts. 
+	however you may want todownload images from only one single post. In this case this:
+	java - jar ./EQDbot.jar --single-post <URL to post>
+	will allow you to do exactly that! Replace <URL to post> with URL like this one:
+	http://www.equestriadaily.com/2017/01/drawfriend-stuff-2132-art-gallery.html 
 	
 IMPORTANT: prior to running any of the commands make sure that you are in the directory that
 contains EQDBot.jar (the directory that you unzipped everything to). Useful command for doing
 it is 'cd /path/to/dir'.
- 
+
+WARNING: the bot does not detect the recent EQD drawfriend stuff saucy editions. It will download all of them because the tag "Saucy" appears only in the title while all images are actually visible. So you will download them in visible mode but won't in hidden mode.
+
 All these modes can be mixed. Just pass these parameters together. For example:
 java - jar ./EQDbot.jar --headless --hidden-only
 
@@ -46,6 +54,14 @@ once its work is started.
 
 The downloaded images are put inside 'images' directory. This folder is automatically generated on startup if it's not already there.
 
+There is a file naming convention that helps you find the origin of image. Each file starts with mysterious number that is the id of drawfriend stuff post. For example here:
+2132 vapor__profile_____speedpaint__by_the_butcher_x-daugrj0.png
+The number 2132 in this case correspond to post:
+Drawfriend Stuff #2117 (Art Compilation)
+However there are posts that don't have ID (like saucy editions). In such cases special value
+'unknown_id' is prepended instead of a number. 
+
+
 Download it here:
 https://github.com/Alagris/EQDBot-drawfriends/raw/master/EQDBot.zip
 (it is among files above)
@@ -54,3 +70,16 @@ Have fun. The source code is open. Send patches if you want. And also, sorry for
 terminal. 
 
 PS. to guys from EQD: don't modify your page layout and HMTL tags too quickly :)
+
+
+
+
+CHANGELOG:
+version 1.0
+	initial version
+	- headless, low quality and hidden modes
+	- basic GUI
+version 1.1
+	- post ID prepended to file name
+	- GUI window got a title with version
+	- single post mode added

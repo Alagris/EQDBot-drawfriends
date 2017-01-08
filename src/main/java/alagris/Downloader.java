@@ -22,15 +22,22 @@ public class Downloader {
 	public void setExportSource(final boolean exportSource) {
 		this.exportSource = exportSource;
 	}
-	public void saveImage(final String url) throws IOException
+	public String saveImage(final String prefix,final String url) throws IOException
+	{
+		return saveImage(prefix, url, new URL(url).openStream());
+	}
+	public String saveImage(final String prefix,final String url,final InputStream is) throws IOException
 	{
 		String fileName=Utils.getFileNameFromURL(url);
 		if(isExportSource()){
-			fileName=Utils.getDomain(url)+" - "+fileName;
+			fileName=prefix+Utils.getDomain(url)+" - "+fileName;
+		}else{
+			fileName=prefix+fileName;
 		}
-		saveImageWithName(url, fileName);
+		saveImageWithName(url, fileName,is);
+		return fileName;
 	}
-	private void saveImageWithName(final String fileURL,final String fileName) throws IOException
+	private void saveImageWithName(final String fileURL,final String fileName,final InputStream is) throws IOException
 	{
 		final File destinationFile =new File(path, fileName);
 		Main.logln("Downloading from: " + fileURL);
@@ -41,7 +48,7 @@ public class Downloader {
 			return;
 		}
 		destinationFile.createNewFile();
-		try (InputStream is = new URL(fileURL).openStream(); OutputStream os = new FileOutputStream(destinationFile))
+		try (OutputStream os = new FileOutputStream(destinationFile))
 		{
 			
 			final byte[] b = new byte[2048];

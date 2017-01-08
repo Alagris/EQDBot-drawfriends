@@ -14,18 +14,26 @@ public class DeviantArtBot {
 		this.bot = bot;
 	}
 
-	public boolean download(final String url) throws IOException {
+	public boolean download(final String prefix,final String url) throws IOException {
 		Main.logln("\tDownloading from DeviantArt: " + url);
 		if (!checkIfDeviantArtDomain(url)) {
 			return false;
 		}
 		final String bigImageURL = extractPathToBiggestPossibleImage(url);
+		
 		Main.logln("Image src found: " + bigImageURL);
 		if (bigImageURL == null) {
 			Main.errln("ERROR4! DeviantArtBot");
 			return false;
 		}
-		bot.getDownloader().saveImage(bigImageURL);
+		
+//		final Page page = bot.getAnyPage(bigImageURL);
+//		if(page==null||page.isHtmlPage()){
+//			Main.errln("ERROR9! DeviantArtBot");
+//			return false;
+//		}
+		bot.getDownloader().saveImage(prefix,bigImageURL);
+		
 		return true;
 	}
 
@@ -68,4 +76,5 @@ public class DeviantArtBot {
 		}
 		return ((HtmlElement) img.get(0)).getAttribute("src");
 	}
+	
 }

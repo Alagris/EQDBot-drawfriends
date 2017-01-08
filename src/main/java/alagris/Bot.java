@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
@@ -44,8 +45,35 @@ public  class Bot
 	}
 	
 	
-	
 	public HtmlPage getPage(final String url)
+	{
+		return getPage(url,false);	
+	}
+	public HtmlPage getPage(final String url,final boolean returnNullInCaseOfError)
+	{
+		try
+		{
+			final Page page =webClient.getPage(url);
+			if(page instanceof HtmlPage)
+			return (HtmlPage)page;
+		}
+		catch (final FailingHttpStatusCodeException e)
+		{
+			e.printStackTrace();
+		}
+		catch (final MalformedURLException e)
+		{
+			e.printStackTrace();
+		}
+		catch (final IOException e)
+		{
+			e.printStackTrace();
+		}
+		if(!returnNullInCaseOfError)System.exit(-1);
+		return null;
+	}
+	
+	public Page getAnyPage(final String url)
 	{
 		try
 		{
@@ -63,7 +91,6 @@ public  class Bot
 		{
 			e.printStackTrace();
 		}
-		System.exit(-1);
 		return null;
 	}
 

@@ -29,4 +29,10 @@ public class Utils {
 	public static File getFileFromURL(final String parentDir,final String url) {
 		return  new File(parentDir,getFileNameFromURL(url));
 	}
+	public static boolean isInteger(final String s){
+		for(int i=0;i<s.length();i++){
+			if(!Character.isDigit(s.charAt(i)))return false;
+		}
+		return true;
+	}
 }

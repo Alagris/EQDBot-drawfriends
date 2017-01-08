@@ -26,9 +26,22 @@ public class EQDBot {
 		this.bot = bot;
 	}
 
-	public void start(final boolean hiddenVersion, final boolean lowQuality) {
-		Main.logln("Start url: "+bot.getStartURL());
+	public void start(final boolean hiddenVersion, final boolean lowQuality, final String singlePostURL) {
 		isRunning=true;
+		if(singlePostURL==null){
+			start(hiddenVersion, lowQuality);
+		}else{
+			try {
+				getImagesInPost(singlePostURL, hiddenVersion, lowQuality);
+				Main.logln("End of this post! My work is done! Bye!");
+			} catch (final IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void start(final boolean hiddenVersion, final boolean lowQuality) {
+		Main.logln("Start url: "+bot.getStartURL());
 		try {
 			Main.logln("Connecting to EQD ");
 			HtmlPage page = bot.getStartPage();
@@ -63,6 +76,7 @@ public class EQDBot {
 	private void getImagesInPost(final String url, final boolean hiddenVersion, final boolean lowQuality) throws IOException {
 		Main.logln("\nOpening post : " + url);
 		final HtmlPage page = bot.getPage(url);
+		final String prefix=getDrawfriendStuffPrefix(url);
 		// visible images are under .../<div>/<a>/<img>
 		// hidden images are under .../<div>/<a>
 		final String imgXPath = "//div[@class='post-body entry-content']/div/a";
@@ -118,7 +132,7 @@ public class EQDBot {
 			// the section
 			// (sections) are divided by <hr>
 			if (i != j)
-				processNodesOfSection(nodes, i, j, hiddenVersion,lowQuality);
+				processNodesOfSection(nodes, i, j, hiddenVersion,lowQuality,prefix);
 
 		}
 	}
@@ -128,8 +142,9 @@ public class EQDBot {
 	 * 
 	 * @param hiddenVersion
 	 * @param lowQuality 
+	 * @param postID 
 	 */
-	private void processNodesOfSection(final List<?> nodes, final int i, final int j, final boolean hiddenVersion, final boolean lowQuality) {
+	private void processNodesOfSection(final List<?> nodes, final int i, final int j, final boolean hiddenVersion, final boolean lowQuality, final String prefix) {
 		int fromInclusive;
 		int toExclusive;
 		int sourceIndex;
@@ -148,12 +163,12 @@ public class EQDBot {
 			return;
 		}
 		sourceURL = ((HtmlAnchor) nodes.get(sourceIndex)).getAttribute("href");
-		processImagesOfSection(nodes, fromInclusive, toExclusive, sourceURL, hiddenVersion,lowQuality);
+		processImagesOfSection(nodes, fromInclusive, toExclusive, sourceURL, hiddenVersion,lowQuality,prefix);
 
 	}
 
 	private void processImagesOfSection(final List<?> nodes, final int fromInclusive, final int toExclusive, final String sourceURL,
-			final boolean hiddenVersion, final boolean lowQuality) {
+			final boolean hiddenVersion, final boolean lowQuality, final String prefix) {
 		final int countOfImages = toExclusive - fromInclusive;
 		Main.logln("count of images=" + countOfImages);
 		switch (countOfImages) {
@@ -162,29 +177,29 @@ public class EQDBot {
 			return;
 		case 1:
 			if(lowQuality){
-				downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion);
+				downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion,prefix);
 			}else
 			if ( visibilityFilter((HtmlAnchor) nodes.get(fromInclusive), hiddenVersion)) {
 				final DeviantArtBot deviantArtBot = new DeviantArtBot(bot);
 				try {
-					if(!deviantArtBot.download(sourceURL)){
+					if(!deviantArtBot.download(prefix,sourceURL)){
 						Main.logln("Downloading from DeviantArt failed! Switching to EQD!");
-						downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion);
+						downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion,prefix);
 					}
 				} catch (final IOException e) {
 					Main.errln("ERROR6! EQDBot");
-					downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion);
+					downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion,prefix);
 				}
 			}
 			break;
 		default:
-			downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion);
+			downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion,prefix);
 			break;
 		}
 
 	}
 
-	private void downloadFromEqdPostImages(final List<?> nodes, int fromInclusive, final int toExclusive, final boolean hiddenVersion)
+	private void downloadFromEqdPostImages(final List<?> nodes, int fromInclusive, final int toExclusive, final boolean hiddenVersion, final String prefix)
 			 {
 		while (fromInclusive < toExclusive) {
 			
@@ -194,7 +209,7 @@ public class EQDBot {
 				
 				try {
 					Main.logln("\tDownloading from EQD: " + imgURL);
-					bot.getDownloader().saveImage(imgURL);
+					bot.getDownloader().saveImage(prefix,imgURL);
 				} catch (final IOException e) {
 					e.printStackTrace();
 				}
@@ -239,5 +254,28 @@ public class EQDBot {
 		// and it's visible version.
 		return isAnchorWithImg(aImage) && !(!isAnchorWithVisibleImg(aImage) ^ hiddenVersion);
 	}
+	
+	/**Conventional prefix based on post ID*/
+	private String getDrawfriendStuffPrefix(final String postURL){
+		return getDrawfriendStuffID(postURL)+" ";
+	}
+	private String getDrawfriendStuffID(final String postURL){
+		//the URL appears to be of this format:
+		//http://www.equestriadaily.com/2013/12/drawfriend-stuff-1032.html
+		//http://www.equestriadaily.com/2016/12/drawfriend-stuff-2117-art-compilation.html#more
+		final String[] urlParts =postURL.split("/");
+		final String[] postParts= urlParts[urlParts.length-1].split("-");
+		if(postParts.length>=3){
+			final String id = postParts[2];
+			if(Utils.isInteger(id)){
+				return id;
+			}else{
+				return "unknown_id";
+			}
+		}
+		return "unknown_id";
+	}
+
+	
 
 }

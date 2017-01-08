@@ -30,6 +30,7 @@ public class MainGUI extends Application {
 	@Override
 	public void start(final Stage primaryStage) {
 		try {
+			primaryStage.setTitle("EQDBot v"+Main.VERSION);
 			final FXMLLoader loader = new FXMLLoader(getClass().getResource("Main.fxml"));
 			final Parent root = loader.load();
 			final Scene scene = new Scene(root,400,400);
