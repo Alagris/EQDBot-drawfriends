@@ -16,9 +16,9 @@ There are a few modes that this application can be run in:
 	pass this command from terminal:
 	java - jar ./EQDbot.jar --hidden-only      
 3. low quality mode:
-	By default the bot is optimized for DeviantArt. When it decets that the source of image
-	comes from there it doesn't not download it from EQD but directly from there. On 
-	DeviantArt images tend to have much bigger size (like 3000x2000 px) while on EQD are 
+	By default the bot is optimized for DeviantArt. When it detects that the source of image
+	comes from there, it will not download it from EQD but directly from original location.
+	On DeviantArt images tend to have much bigger size (like 3000x2000 px) while on EQD are 
 	only miniatures (like 700x500 px). However, better quality means more data to transfer
 	so this mode is slower. if you don't care that much about extra pixels you download only
 	from EQD (often but not always in worse quality). To do it pass to terminal:
@@ -38,13 +38,17 @@ By default the bot starts it search at:
 http://www.equestriadaily.com/search/label/Drawfriend
 But you can change it to something more specific like:
 http://www.equestriadaily.com/search/label/Drawfriend?updated-max=2016-12-21T17:00:00-07:00&max-results=20&start=20&by-date=false
-(just click "Older Posts" button at the bottom or choose date directly)
+(just click "Older Posts" button at the bottom or choose date directly).
 Such a new link you will need to put inside 'startLink' file and the run the bot.
 Once the web crawler starts it will traverse only to older posts, until you stop it
 or it encounters the very last page. Changes made to 'startLink' file won't affect the bot
 once its work is started. 
 
 The downloaded images are put inside 'images' directory. This folder is automatically generated on startup if it's not already there.
+
+Download it here:
+https://github.com/Alagris/EQDBot-drawfriends/raw/master/EQDBot.zip
+(it is among files above)
 
 Have fun. The source code is open. Send patches if you want. And also, sorry for so minimalist GUI. If you want access to hidden EQD content you will need to make friends with
 terminal. 
