@@ -75,11 +75,11 @@ PS. to guys from EQD: don't modify your page layout and HMTL tags too quickly :)
 
 
 CHANGELOG:
-version 1.0
-	initial version
+- version 1.0
+	- initial version
 	- headless, low quality and hidden modes
 	- basic GUI
-version 1.1
+- version 1.1
 	- post ID prepended to file name
 	- GUI window got a title with version
 	- single post mode added
