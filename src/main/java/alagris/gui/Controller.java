@@ -6,6 +6,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 
 public class Controller {
@@ -17,6 +18,9 @@ public class Controller {
      * from the beginning are truncated as many characters as this varaible specifies*/
     private static final int LOGS_CLEAR_LENGTH=1024;
     
+    @FXML
+    private ScrollPane scrollPane;
+
     @FXML
     void stop(final ActionEvent event) {
     	Main.stop();
@@ -36,12 +40,13 @@ public class Controller {
 				loopCall=true;
 				if(newValue.length()>MAX_LOGS_LENGTH){
 					final int charactersToDelete=Math.max(LOGS_CLEAR_LENGTH,newValue.length()-MAX_LOGS_LENGTH);
-					Platform.runLater(()->logsArea.setText(newValue.substring(charactersToDelete)));
+					Platform.runLater(()->{
+					logsArea.setText(newValue.substring(charactersToDelete));
+					scrollPane.setVvalue( 1.0d);
+					});
 				}
 			}
 		});
-    	logsArea.setText("hell ");
-    	logsArea.appendText("hello");
     }
     
     public void logln(final String text){

@@ -10,7 +10,7 @@ public class Main {
 
 	public static void main(final String[] args) {
 		System.out.println("Pass --headless as parameter to run in console mode.");
-		System.out.println("Pass -v as parameter to download  only visible images.");
+		System.out.println("Pass --hidden-only as parameter to download  only visible images.");
 		System.out.println("Pass -lq as parameter to download faster but with lower quality whenever possible.");
 		boolean hiddenVersion = false;
 		boolean lowQuality = false;
@@ -18,8 +18,8 @@ public class Main {
 		if (args.length > 0) {
 			for (final String arg : args) {
 				switch (arg) {
-				case "-v":
-					hiddenVersion = false;
+				case "--hidden-only":
+					hiddenVersion = true;
 					break;
 				case "-lq":
 					lowQuality = true;

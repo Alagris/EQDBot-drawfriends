@@ -21,3 +21,12 @@ repositories {
 dependencies {
     compile 'net.sourceforge.htmlunit:htmlunit:2.23'
 }
+
+jar {
+   baseName = 'EQDBot'
+   from('src/main/java')
+   include 'startLink'
+   include 'README.md'
+}
+
+buildDir = 'build'

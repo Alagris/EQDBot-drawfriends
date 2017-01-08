@@ -27,7 +27,6 @@ public class EQDBot {
 	}
 
 	public void start(final boolean hiddenVersion, final boolean lowQuality) {
-		System.out.println("hello");
 		Main.logln("Start url: "+bot.getStartURL());
 		isRunning=true;
 		try {
