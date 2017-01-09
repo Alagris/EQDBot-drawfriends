@@ -168,7 +168,7 @@ public class EQDBot {
 			final boolean lowQuality, final String prefix, final boolean isSaucyPost) {
 		int fromInclusive;
 		int toExclusive;
-		String sourceURL;
+		String sourceURL=null;
 		HtmlAnchor sourceAnchor=null;
 		if ((sourceAnchor=isAnchorWithSource(nodes.get(i))) != null ) {
 			fromInclusive = i + 1;
@@ -177,26 +177,49 @@ public class EQDBot {
 			fromInclusive = i;
 			toExclusive = j - 1;
 		} else {
+			fromInclusive = i;
+			toExclusive = j;
+			//this is a safety check against missing links which 
+			//would be source anchors but they are missing <a> tag
+			if(!isAnchorWithImg(nodes.get(fromInclusive))){
+				fromInclusive++;
+			}
+			if(!isAnchorWithImg(nodes.get(toExclusive-1))){
+				toExclusive--;
+			}
 			Main.errln("ERROR1! Cound not find Source Anchor among nodes bewteen i=" + i + " j=" + j);
-			return;
 		}
-		sourceURL = sourceAnchor.getAttribute("href");
+		if(sourceAnchor!=null)sourceURL = sourceAnchor.getAttribute("href");
 		processImagesOfSection(nodes, fromInclusive, toExclusive, sourceURL, hiddenVersion, lowQuality, prefix,isSaucyPost);
 
 	}
 
+	
+
 	private void processImagesOfSection(final List<?> nodes, final int fromInclusive, final int toExclusive,
-			final String sourceURL, final boolean hiddenVersion, final boolean lowQuality, final String prefix, final boolean isSaucyPost) {
+			 String sourceURL, final boolean hiddenVersion, final boolean lowQuality, final String prefix, final boolean isSaucyPost) {
 		final int countOfImages = toExclusive - fromInclusive;
 		Main.logln("count of images=" + countOfImages);
 		switch (countOfImages) {
 		case 0:
 			Main.errln("ERROR5! EQDBot");
 			return;
-		case 1:
+		case 1://If the source is DeviantArt
+			//there can be only one image.
+			//If source is another website then 
+			//it could contain multiple images but
+			//we know that deviantArt shows 1 image at the time
+			if(!(nodes.get(fromInclusive) instanceof HtmlAnchor))break;//safety check in 
+			//case of unexpected page layout
+			final HtmlAnchor imgAnchor=(HtmlAnchor) nodes.get(fromInclusive);
+			
+			if(sourceURL==null){//watch out! missing link!
+				//maybe the link is at least preserved by image itself
+				sourceURL=imgAnchor.getAttribute("href");
+			}
 			if (lowQuality) {
 				downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion, prefix,isSaucyPost);
-			} else if (visibilityFilterWithLog((HtmlAnchor) nodes.get(fromInclusive), hiddenVersion,isSaucyPost)) {
+			} else if (visibilityFilterWithLog(imgAnchor, hiddenVersion,isSaucyPost)) {
 				final DeviantArtBot deviantArtBot = new DeviantArtBot(bot);
 				try {
 					if (!deviantArtBot.download(prefix, sourceURL)) {
@@ -254,6 +277,11 @@ public class EQDBot {
 			}
 		}
 		return null;
+	}
+	
+	private boolean isAnchorWithImg(final Object node) {
+		if(node instanceof HtmlAnchor)return isAnchorWithImg((HtmlAnchor)node);
+		return false;
 	}
 
 	private boolean isAnchorWithImg(final HtmlAnchor node) {

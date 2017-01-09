@@ -16,7 +16,7 @@ public class Main {
 		System.out.println("Pass -lq as parameter to download faster but with lower quality whenever possible.");
 		System.out.println("Pass --single-post <URL to post> as parameter to download from only one post.");
 		//here are default options
-		boolean hiddenVersion = false;//should be false
+		boolean hiddenVersion = true;//should be false
 		boolean lowQuality = false;//should be false
 		 String singlePostURL = null;//should be null
 		for (int i = 0; i < args.length; i++) {
