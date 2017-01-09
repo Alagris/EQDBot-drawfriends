@@ -86,3 +86,5 @@ CHANGELOG:
 - version 1.2
 	- now bot attempts to detect "Saucy Edition" posts
 	- some bugs fixed
+-version 1.3
+	- added support for older EQD layout (posts from around 2015 are different)

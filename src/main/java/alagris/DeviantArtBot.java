@@ -17,6 +17,7 @@ public class DeviantArtBot {
 	public boolean download(final String prefix,final String url) throws IOException {
 		Main.logln("\tDownloading from DeviantArt: " + url);
 		if (!checkIfDeviantArtDomain(url)) {
+			Main.logln("Not DeviantArt!");
 			return false;
 		}
 		final String bigImageURL = extractPathToBiggestPossibleImage(url);

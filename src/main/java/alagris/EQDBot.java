@@ -6,6 +6,7 @@ import java.util.List;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlBold;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlHorizontalRule;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -42,9 +43,10 @@ public class EQDBot {
 
 	private void start(final boolean hiddenVersion, final boolean lowQuality) {
 		Main.logln("Start url: " + bot.getStartURL());
+		HtmlPage page = null;
 		try {
 			Main.logln("Connecting to EQD ");
-			HtmlPage page = bot.getStartPage();
+			page = bot.getStartPage();
 			while (isRunning) {
 				Main.logln("Searching in group of posts: " + page.getUrl());
 				final HtmlAnchor buttonForOlderPosts = searchAcrossEqdDrawfriendPosts(page, hiddenVersion, lowQuality);
@@ -61,6 +63,7 @@ public class EQDBot {
 			e.printStackTrace();
 		}
 		Main.logln("Downloading finished!");
+		if(page!=null)Main.logln("To resume downloading from this point put the following link in 'startLink' file:\n"+page.getUrl());
 	}
 
 	private HtmlAnchor searchAcrossEqdDrawfriendPosts(final HtmlPage page, final boolean hiddenVersion,
@@ -92,9 +95,13 @@ public class EQDBot {
 		// visible images are under .../<div>/<a>/<img>
 		// hidden images are under .../<div>/<a>
 		final String imgXPath = "//div[@class='post-body entry-content']/div/a";
-		final String srcXPath = "//div[@class='post-body entry-content']/b/a";
-		final String breakXPath = "//div[@class='post-body entry-content']/hr";
 		// sources are under .../<b>/<a>
+		// or in older posts .../<a>/<b>
+		final String srcXPath = "//div[@class='post-body entry-content']/b/a";
+		final String srcXPathOld = "//div[@class='post-body entry-content']/a/b";
+		// breaks are under .../<hr>
+		final String breakXPath = "//div[@class='post-body entry-content']/hr";
+		
 		// layout is following:
 		// img
 		// src
@@ -124,7 +131,7 @@ public class EQDBot {
 		// break (possible errors on page and breaks may be sometimes
 		// unnecessary)
 
-		final List<?> nodes = page.getByXPath(imgXPath + "|" + srcXPath + "|" + breakXPath);
+		final List<?> nodes = page.getByXPath(imgXPath + "|" + srcXPath + "|" + breakXPath+"|"+srcXPathOld);
 		for (int i = 0, j = 0; i < nodes.size() && isRunning(); j++, i = j) {
 
 			while (j < nodes.size()) {
@@ -161,22 +168,19 @@ public class EQDBot {
 			final boolean lowQuality, final String prefix, final boolean isSaucyPost) {
 		int fromInclusive;
 		int toExclusive;
-		int sourceIndex;
 		String sourceURL;
-
-		if (isAnchorWithSource(nodes.get(i))) {
+		HtmlAnchor sourceAnchor=null;
+		if ((sourceAnchor=isAnchorWithSource(nodes.get(i))) != null ) {
 			fromInclusive = i + 1;
 			toExclusive = j;
-			sourceIndex = i;
-		} else if (isAnchorWithSource(nodes.get(j - 1))) {
+		} else if ((sourceAnchor=isAnchorWithSource(nodes.get(j-1))) != null ) {
 			fromInclusive = i;
 			toExclusive = j - 1;
-			sourceIndex = j - 1;
 		} else {
 			Main.errln("ERROR1! Cound not find Source Anchor among nodes bewteen i=" + i + " j=" + j);
 			return;
 		}
-		sourceURL = ((HtmlAnchor) nodes.get(sourceIndex)).getAttribute("href");
+		sourceURL = sourceAnchor.getAttribute("href");
 		processImagesOfSection(nodes, fromInclusive, toExclusive, sourceURL, hiddenVersion, lowQuality, prefix,isSaucyPost);
 
 	}
@@ -234,11 +238,22 @@ public class EQDBot {
 	////////////////////////////////////////////
 	// Down below are utility methods
 	////////////////////////////////////////////
-	private boolean isAnchorWithSource(final Object node) {
-		if (node instanceof HtmlAnchor) {
-			return ((HtmlAnchor) node).getParentNode().getNodeName().equals("b");
+	/**Returns the anchor if it is anchor with source or null if it's not*/
+	private HtmlAnchor isAnchorWithSource(final Object node) {
+		if (node instanceof HtmlAnchor) {//newer layout
+			final HtmlAnchor a =(HtmlAnchor) node;
+			final String parent=a.getParentNode().getNodeName();
+			if( parent.equals("b")){
+				return a;
+			}
+		}else if(node instanceof HtmlBold){//older layout
+			final HtmlBold b =(HtmlBold) node;
+			final String parent=b.getParentNode().getNodeName();
+			if(parent.equals("a")){
+				return (HtmlAnchor)b.getParentNode();
+			}
 		}
-		return false;
+		return null;
 	}
 
 	private boolean isAnchorWithImg(final HtmlAnchor node) {
