@@ -315,7 +315,6 @@ public class EQDBot {
 				if (i + 2 < postParts.length && postParts[i + 1].equals("stuff")) {
 					// okay so we've got a sequence of 'drawfriend stuff'
 					// now it must be the ID or there is no ID at all
-					System.out.println("QQQ="+postParts[i + 2]);
 					if(Utils.isInteger(postParts[i + 2])){
 						id=postParts[i + 2];
 						break;
