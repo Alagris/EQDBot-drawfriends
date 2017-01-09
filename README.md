@@ -67,7 +67,7 @@ Download it here:
 https://github.com/Alagris/EQDBot-drawfriends/raw/master/EQDBot.zip
 (it is among files above)
 
-Have fun. The source code is open. Send patches if you want. And also, sorry for so minimalist GUI. If you want access to hidden EQD content you will need to make friends with terminal. If you find bugs feel free to notify me by adding an issue on github. However, please note that EQD itself sometimes has errors (like missing or dead links, missing images etc.) or in some posts the layout sightly changed. My bot is designed to detect most of them but it's still possible to get traped. In other words, before reporting a bug, try to make sure that it's not a desired befaviour in a misleading environemt. Some errors only a human being can detect (or really advanced AI, which I don't have time to code).
+Have fun. The source code is open. Send patches if you want. And also, sorry for so minimalist GUI. If you want access to hidden EQD content you will need to make friends with terminal. If you find bugs feel free to notify me by adding an issue on github. However, please note that EQD itself sometimes has errors (like missing or dead links, missing images etc.) or in some posts the layout is sightly changed. My bot is designed to detect most of them but it's still possible to get trapped. In other words, before reporting a bug, try to make sure that it's not a desired befaviour in a misleading environemt. Some errors only a human being can detect (or really advanced AI, which I don't have time to code and in fact is not necessary for such a small project).
 
 PS. to guys from EQD: don't modify your page layout and HMTL tags too quickly :)
 
@@ -85,4 +85,4 @@ CHANGELOG:
 	- single post mode added
 - version 1.2
 	- now bot attempts to detect "Saucy Edition" posts
-	- some bug fixes
+	- some bugs fixed
