@@ -12,7 +12,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 public class EQDBot {
 	private final Bot bot;
-	private volatile boolean isRunning=false;
+	private volatile boolean isRunning = false;
 
 	public boolean isRunning() {
 		return isRunning;
@@ -27,10 +27,10 @@ public class EQDBot {
 	}
 
 	public void start(final boolean hiddenVersion, final boolean lowQuality, final String singlePostURL) {
-		isRunning=true;
-		if(singlePostURL==null){
+		isRunning = true;
+		if (singlePostURL == null) {
 			start(hiddenVersion, lowQuality);
-		}else{
+		} else {
 			try {
 				getImagesInPost(singlePostURL, hiddenVersion, lowQuality);
 				Main.logln("End of this post! My work is done! Bye!");
@@ -39,16 +39,16 @@ public class EQDBot {
 			}
 		}
 	}
-	
+
 	private void start(final boolean hiddenVersion, final boolean lowQuality) {
-		Main.logln("Start url: "+bot.getStartURL());
+		Main.logln("Start url: " + bot.getStartURL());
 		try {
 			Main.logln("Connecting to EQD ");
 			HtmlPage page = bot.getStartPage();
 			while (isRunning) {
 				Main.logln("Searching in group of posts: " + page.getUrl());
-				final HtmlAnchor buttonForOlderPosts=searchAcrossEqdDrawfriendPosts(page, hiddenVersion,lowQuality);
-				if(buttonForOlderPosts==null){
+				final HtmlAnchor buttonForOlderPosts = searchAcrossEqdDrawfriendPosts(page, hiddenVersion, lowQuality);
+				if (buttonForOlderPosts == null) {
 					Main.logln("That's it my friend! No more posts!");
 					return;
 				}
@@ -63,21 +63,32 @@ public class EQDBot {
 		Main.logln("Downloading finished!");
 	}
 
-	private HtmlAnchor searchAcrossEqdDrawfriendPosts(final HtmlPage page, final boolean hiddenVersion, final boolean lowQuality) throws IOException {
+	private HtmlAnchor searchAcrossEqdDrawfriendPosts(final HtmlPage page, final boolean hiddenVersion,
+			final boolean lowQuality) throws IOException {
 		final List<?> listOfBlogPosts = page.getByXPath("//h3[@class='post-title entry-title']/a");
 		for (final Object blogPost : listOfBlogPosts) {
 			final HtmlAnchor blogPostAnchor = (HtmlAnchor) blogPost;
 			final String blogPostURL = blogPostAnchor.getAttribute("href");
-			getImagesInPost(blogPostURL, hiddenVersion,lowQuality);
-			if(!isRunning())break;
+			getImagesInPost(blogPostURL, hiddenVersion, lowQuality);
+			if (!isRunning())
+				break;
 		}
 		return page.getHtmlElementById("Blog1_blog-pager-older-link");
 	}
 
-	private void getImagesInPost(final String url, final boolean hiddenVersion, final boolean lowQuality) throws IOException {
-		Main.logln("\nOpening post : " + url);
+	private void getImagesInPost(final String url, final boolean hiddenVersion, final boolean lowQuality)
+			throws IOException {
+		
+		final String id=getDrawfriendStuffID(url);
+		Main.logln("\nOne more post. ID=" + id);
+		final boolean isSaucyPost=id.equals(SAUCY_ID);
+		if(!postFilter(isSaucyPost, hiddenVersion)){
+			Main.logln("Skipping post: " + url);
+			return;
+		}
+		Main.logln("Opening post : " + url);
 		final HtmlPage page = bot.getPage(url);
-		final String prefix=getDrawfriendStuffPrefix(url);
+		final String prefix = getDrawfriendStuffPrefix(id);
 		// visible images are under .../<div>/<a>/<img>
 		// hidden images are under .../<div>/<a>
 		final String imgXPath = "//div[@class='post-body entry-content']/div/a";
@@ -133,7 +144,7 @@ public class EQDBot {
 			// the section
 			// (sections) are divided by <hr>
 			if (i != j)
-				processNodesOfSection(nodes, i, j, hiddenVersion,lowQuality,prefix);
+				processNodesOfSection(nodes, i, j, hiddenVersion, lowQuality, prefix,isSaucyPost);
 
 		}
 	}
@@ -142,10 +153,12 @@ public class EQDBot {
 	 * You need to ensure that all nodes between i and j are or type HtmlAnchor
 	 * 
 	 * @param hiddenVersion
-	 * @param lowQuality 
-	 * @param postID 
+	 * @param lowQuality
+	 * @param isSaucyPost 
+	 * @param postID
 	 */
-	private void processNodesOfSection(final List<?> nodes, final int i, final int j, final boolean hiddenVersion, final boolean lowQuality, final String prefix) {
+	private void processNodesOfSection(final List<?> nodes, final int i, final int j, final boolean hiddenVersion,
+			final boolean lowQuality, final String prefix, final boolean isSaucyPost) {
 		int fromInclusive;
 		int toExclusive;
 		int sourceIndex;
@@ -164,12 +177,12 @@ public class EQDBot {
 			return;
 		}
 		sourceURL = ((HtmlAnchor) nodes.get(sourceIndex)).getAttribute("href");
-		processImagesOfSection(nodes, fromInclusive, toExclusive, sourceURL, hiddenVersion,lowQuality,prefix);
+		processImagesOfSection(nodes, fromInclusive, toExclusive, sourceURL, hiddenVersion, lowQuality, prefix,isSaucyPost);
 
 	}
 
-	private void processImagesOfSection(final List<?> nodes, final int fromInclusive, final int toExclusive, final String sourceURL,
-			final boolean hiddenVersion, final boolean lowQuality, final String prefix) {
+	private void processImagesOfSection(final List<?> nodes, final int fromInclusive, final int toExclusive,
+			final String sourceURL, final boolean hiddenVersion, final boolean lowQuality, final String prefix, final boolean isSaucyPost) {
 		final int countOfImages = toExclusive - fromInclusive;
 		Main.logln("count of images=" + countOfImages);
 		switch (countOfImages) {
@@ -177,40 +190,39 @@ public class EQDBot {
 			Main.errln("ERROR5! EQDBot");
 			return;
 		case 1:
-			if(lowQuality){
-				downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion,prefix);
-			}else
-			if ( visibilityFilter((HtmlAnchor) nodes.get(fromInclusive), hiddenVersion)) {
+			if (lowQuality) {
+				downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion, prefix,isSaucyPost);
+			} else if (visibilityFilterWithLog((HtmlAnchor) nodes.get(fromInclusive), hiddenVersion,isSaucyPost)) {
 				final DeviantArtBot deviantArtBot = new DeviantArtBot(bot);
 				try {
-					if(!deviantArtBot.download(prefix,sourceURL)){
+					if (!deviantArtBot.download(prefix, sourceURL)) {
 						Main.logln("Downloading from DeviantArt failed! Switching to EQD!");
-						downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion,prefix);
+						downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion, prefix, isSaucyPost);
 					}
 				} catch (final IOException e) {
 					Main.errln("ERROR6! EQDBot");
-					downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion,prefix);
+					downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion, prefix, isSaucyPost);
 				}
 			}
 			break;
 		default:
-			downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion,prefix);
+			downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion, prefix, isSaucyPost);
 			break;
 		}
 
 	}
 
-	private void downloadFromEqdPostImages(final List<?> nodes, int fromInclusive, final int toExclusive, final boolean hiddenVersion, final String prefix)
-			 {
+	private void downloadFromEqdPostImages(final List<?> nodes, int fromInclusive, final int toExclusive,
+			final boolean hiddenVersion, final String prefix, final boolean isSaucyPost) {
 		while (fromInclusive < toExclusive) {
-			
+
 			final HtmlAnchor aImage = (HtmlAnchor) nodes.get(fromInclusive);
-			if (visibilityFilter(aImage, hiddenVersion)) {
+			if (visibilityFilterWithLog(aImage, hiddenVersion,isSaucyPost)) {
 				final String imgURL = aImage.getAttribute("href");
-				
+
 				try {
 					Main.logln("\tDownloading from EQD: " + imgURL);
-					bot.getDownloader().saveImage(prefix,imgURL);
+					bot.getDownloader().saveImage(prefix, imgURL);
 				} catch (final IOException e) {
 					e.printStackTrace();
 				}
@@ -230,9 +242,10 @@ public class EQDBot {
 	}
 
 	private boolean isAnchorWithImg(final HtmlAnchor node) {
-			return  node.getParentNode().getNodeName().equals("div");
+		return node.getParentNode().getNodeName().equals("div");
 	}
-//
+
+	//
 	/** First try whether it is an anchor with image at all */
 	private boolean isAnchorWithVisibleImg(final HtmlElement node) {
 		if (node.getChildElementCount() != 1)
@@ -240,10 +253,17 @@ public class EQDBot {
 		final DomNode child = node.getFirstChild();
 		return child.getNodeName().equals("img");
 	}
-	
-
-	/** returns true if anchor with image passes test */
-	private boolean visibilityFilter(final HtmlAnchor aImage, final boolean hiddenVersion) {
+	private boolean visibilityFilterWithLog(final HtmlAnchor aImage, final boolean hiddenVersion, final boolean isSaucyPost) {
+		if(visibilityFilter(aImage, hiddenVersion,isSaucyPost)){
+			return true;
+		}else{
+			Main.logln("Visibility filter rejected!");
+			return false;
+		}
+	}
+	/** returns true if anchor with image passes test 
+	 * @param isSaucyPost */
+	private boolean visibilityFilter(final HtmlAnchor aImage, final boolean hiddenVersion, final boolean isSaucyPost) {
 		// hidden version = we are searching for <a> element that have no
 		// <img> inside them so the image is hidden
 		// The if statement below is true:
@@ -253,30 +273,61 @@ public class EQDBot {
 		// there is one child (img is the only possibility unless they change
 		// page layout)
 		// and it's visible version.
-		return isAnchorWithImg(aImage) && !(!isAnchorWithVisibleImg(aImage) ^ hiddenVersion);
+		if(!isAnchorWithImg(aImage)){//safety check
+			return false;
+		}
+		//all images in saucy posts are treated as hidden.
+		final boolean isHiddenImage=isSaucyPost || !isAnchorWithVisibleImg(aImage);
+		return !(isHiddenImage^ hiddenVersion);
 	}
 	
-	/**Conventional prefix based on post ID*/
-	private String getDrawfriendStuffPrefix(final String postURL){
-		return getDrawfriendStuffID(postURL)+" ";
-	}
-	private String getDrawfriendStuffID(final String postURL){
-		//the URL appears to be of this format:
-		//http://www.equestriadaily.com/2013/12/drawfriend-stuff-1032.html
-		//http://www.equestriadaily.com/2016/12/drawfriend-stuff-2117-art-compilation.html#more
-		final String[] urlParts =postURL.split("/");
-		final String[] postParts= urlParts[urlParts.length-1].split("-");
-		if(postParts.length>=3){
-			final String id = postParts[2];
-			if(Utils.isInteger(id)){
-				return id;
-			}else{
-				return "unknown_id";
-			}
-		}
-		return "unknown_id";
+	private static final String SAUCY_ID="saucy";
+	private boolean postFilter(final boolean isSaucyPost, final boolean hiddenVersion) {
+		if(isSaucyPost)return hiddenVersion;
+		return true;
 	}
 
-	
+	/** Conventional prefix based on post ID */
+	private String getDrawfriendStuffPrefix(final String id) {
+		return id + " ";
+	}
+
+	private String getDrawfriendStuffID(final String postURL) {
+		// the URL appears to be of this format:
+		// http://www.equestriadaily.com/2013/12/drawfriend-stuff-1032.html
+		// http://www.equestriadaily.com/2016/12/drawfriend-stuff-2117-art-compilation.html#more
+		/** parts that every URL has */
+		final String[] urlParts = postURL.split("/");
+		//let's cut off the extension like .html
+		final String urlLastPart=urlParts[urlParts.length - 1];
+		final String urlLastPartTruncated=urlLastPart.substring(0, urlLastPart.lastIndexOf('.'));
+		/** Words that make up the post title */
+		final String[] postParts = urlLastPartTruncated.split("-");
+		
+		//a safety check
+		for (int i = 0; i < postParts.length; i++) {
+			postParts[i]=postParts[i].toLowerCase();
+		}
+		String id="unknown_id";
+		//now onto the work
+		for (int i = 0; i < postParts.length; i++) {
+			if (i + 1 < postParts.length && postParts[i].equals("drawfriend")) {
+				if (i + 2 < postParts.length && postParts[i + 1].equals("stuff")) {
+					// okay so we've got a sequence of 'drawfriend stuff'
+					// now it must be the ID or there is no ID at all
+					System.out.println("QQQ="+postParts[i + 2]);
+					if(Utils.isInteger(postParts[i + 2])){
+						id=postParts[i + 2];
+						break;
+					}
+
+				}
+			}else if(postParts[i].equals("saucy")){
+				id=SAUCY_ID;
+			}
+		}
+		return id;
+		
+	}
 
 }

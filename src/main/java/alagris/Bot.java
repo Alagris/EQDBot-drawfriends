@@ -39,6 +39,7 @@ public  class Bot
 		webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
 		webClient.getOptions().setUseInsecureSSL(true);
 		webClient.getOptions().setJavaScriptEnabled(false);
+		webClient.getOptions().setPrintContentOnFailingStatusCode(false);
 		new File(downloadDir).mkdirs();
 		startURL=Utils.readFirstLineOfFile("startLink");
 		downloader = new Downloader(getDownloadDir());

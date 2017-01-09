@@ -34,8 +34,6 @@ IMPORTANT: prior to running any of the commands make sure that you are in the di
 contains EQDBot.jar (the directory that you unzipped everything to). Useful command for doing
 it is 'cd /path/to/dir'.
 
-WARNING: the bot does not detect the recent EQD drawfriend stuff saucy editions. It will download all of them because the tag "Saucy" appears only in the title while all images are actually visible. So you will download them in visible mode but won't in hidden mode.
-
 All these modes can be mixed. Just pass these parameters together. For example:
 java - jar ./EQDbot.jar --headless --hidden-only
 
@@ -47,7 +45,7 @@ http://www.equestriadaily.com/search/label/Drawfriend
 But you can change it to something more specific like:
 http://www.equestriadaily.com/search/label/Drawfriend?updated-max=2016-12-21T17:00:00-07:00&max-results=20&start=20&by-date=false
 (just click "Older Posts" button at the bottom or choose date directly).
-Such a new link you will need to put inside 'startLink' file and the run the bot.
+Such a new link you will need to put inside 'startLink' file and then run the bot.
 Once the web crawler starts it will traverse only to older posts, until you stop it
 or it encounters the very last page. Changes made to 'startLink' file won't affect the bot
 once its work is started. 
@@ -56,18 +54,20 @@ The downloaded images are put inside 'images' directory. This folder is automati
 
 There is a file naming convention that helps you find the origin of image. Each file starts with mysterious number that is the id of drawfriend stuff post. For example here:
 2132 vapor__profile_____speedpaint__by_the_butcher_x-daugrj0.png
-The number 2132 in this case correspond to post:
-Drawfriend Stuff #2117 (Art Compilation)
-However there are posts that don't have ID (like saucy editions). In such cases special value
-'unknown_id' is prepended instead of a number. 
+The number 2132 in this case corresponds to post:
+Drawfriend Stuff #2132 (Art Compilation)
+However there are posts that don't have ID (like 'best' and a few 'art compilations'). In such cases special value
+'unknown_id' is prepended instead of a number. For saucy editions an ID 'saucy' is prepended so that you are warned before
+looking inside. 
+
+Sometimes, when you close the GUI you may experience a lag. In fact it's not an error in the code but just waiting for the last image to complete downloading. The required time to finally shut down may depend on yout internet connection and size of image.
 
 
 Download it here:
 https://github.com/Alagris/EQDBot-drawfriends/raw/master/EQDBot.zip
 (it is among files above)
 
-Have fun. The source code is open. Send patches if you want. And also, sorry for so minimalist GUI. If you want access to hidden EQD content you will need to make friends with
-terminal. 
+Have fun. The source code is open. Send patches if you want. And also, sorry for so minimalist GUI. If you want access to hidden EQD content you will need to make friends with terminal. If you find bugs feel free to notify me by adding an issue on github. However, please note that EQD itself sometimes has errors (like missing or dead links, missing images etc.) or in some posts the layout sightly changed. My bot is designed to detect most of them but it's still possible to get traped. In other words, before reporting a bug, try to make sure that it's not a desired befaviour in a misleading environemt. Some errors only a human being can detect (or really advanced AI, which I don't have time to code).
 
 PS. to guys from EQD: don't modify your page layout and HMTL tags too quickly :)
 
@@ -83,3 +83,6 @@ CHANGELOG:
 	- post ID prepended to file name
 	- GUI window got a title with version
 	- single post mode added
+- version 1.2
+	- now bot attempts to detect "Saucy Edition" posts
+	- some bug fixes
