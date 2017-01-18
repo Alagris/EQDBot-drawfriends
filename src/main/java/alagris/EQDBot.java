@@ -63,7 +63,7 @@ public class EQDBot {
 			e.printStackTrace();
 		}
 		Main.logln("Downloading finished!");
-		if(page!=null)Main.logln("To resume downloading from this point put the following link in 'startLink' file:\n"+page.getUrl());
+		if(page!=null)Main.logln("To resume downloading from this point put the following link in 'startLink' file:\n"+page.getUrl()+"\nThe default link is http://www.equestriadaily.com/search/label/Drawfriend");
 	}
 
 	private HtmlAnchor searchAcrossEqdDrawfriendPosts(final HtmlPage page, final boolean hiddenVersion,

@@ -2,3 +2,5 @@ images/*
 images/
 bin/*
 build/*
+/.gradle/
+/build/
