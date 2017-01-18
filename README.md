@@ -90,3 +90,6 @@ CHANGELOG:
 	- some bugs fixed
 - version 1.3
 	- added support for older EQD layout (posts from around 2015 are different)
+- version 1.3.1
+	- in previous version there was one value modified for debugging which made it impossible to run in visible mode. This debugging leftover was fixed.
+	- a message with default startLink value will show at the termination of program.
