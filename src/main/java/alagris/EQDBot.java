@@ -63,7 +63,9 @@ public class EQDBot {
 			e.printStackTrace();
 		}
 		Main.logln("Downloading finished!");
-		if(page!=null)Main.logln("To resume downloading from this point put the following link in 'startLink' file:\n"+page.getUrl()+"\nThe default link is http://www.equestriadaily.com/search/label/Drawfriend");
+		if (page != null)
+			Main.logln("To resume downloading from this point put the following link in 'startLink' file:\n"
+					+ page.getUrl() + "\nThe default link is http://www.equestriadaily.com/search/label/Drawfriend");
 	}
 
 	private HtmlAnchor searchAcrossEqdDrawfriendPosts(final HtmlPage page, final boolean hiddenVersion,
@@ -81,11 +83,11 @@ public class EQDBot {
 
 	private void getImagesInPost(final String url, final boolean hiddenVersion, final boolean lowQuality)
 			throws IOException {
-		
-		final String id=getDrawfriendStuffID(url);
+
+		final String id = getDrawfriendStuffID(url);
 		Main.logln("\nOne more post. ID=" + id);
-		final boolean isSaucyPost=id.equals(SAUCY_ID);
-		if(!postFilter(isSaucyPost, hiddenVersion)){
+		final boolean isSaucyPost = id.equals(SAUCY_ID);
+		if (!postFilter(isSaucyPost, hiddenVersion)) {
 			Main.logln("Skipping post: " + url);
 			return;
 		}
@@ -101,7 +103,7 @@ public class EQDBot {
 		final String srcXPathOld = "//div[@class='post-body entry-content']/a/b";
 		// breaks are under .../<hr>
 		final String breakXPath = "//div[@class='post-body entry-content']/hr";
-		
+
 		// layout is following:
 		// img
 		// src
@@ -131,7 +133,7 @@ public class EQDBot {
 		// break (possible errors on page and breaks may be sometimes
 		// unnecessary)
 
-		final List<?> nodes = page.getByXPath(imgXPath + "|" + srcXPath + "|" + breakXPath+"|"+srcXPathOld);
+		final List<?> nodes = page.getByXPath(imgXPath + "|" + srcXPath + "|" + breakXPath + "|" + srcXPathOld);
 		for (int i = 0, j = 0; i < nodes.size() && isRunning(); j++, i = j) {
 
 			while (j < nodes.size()) {
@@ -151,7 +153,7 @@ public class EQDBot {
 			// the section
 			// (sections) are divided by <hr>
 			if (i != j)
-				processNodesOfSection(nodes, i, j, hiddenVersion, lowQuality, prefix,isSaucyPost);
+				processNodesOfSection(nodes, i, j, hiddenVersion, lowQuality, prefix, isSaucyPost);
 
 		}
 	}
@@ -161,70 +163,78 @@ public class EQDBot {
 	 * 
 	 * @param hiddenVersion
 	 * @param lowQuality
-	 * @param isSaucyPost 
+	 * @param isSaucyPost
 	 * @param postID
 	 */
 	private void processNodesOfSection(final List<?> nodes, final int i, final int j, final boolean hiddenVersion,
 			final boolean lowQuality, final String prefix, final boolean isSaucyPost) {
 		int fromInclusive;
 		int toExclusive;
-		String sourceURL=null;
-		HtmlAnchor sourceAnchor=null;
-		if ((sourceAnchor=isAnchorWithSource(nodes.get(i))) != null ) {
+		String sourceURL = null;
+		HtmlAnchor sourceAnchor = null;
+		if ((sourceAnchor = isAnchorWithSource(nodes.get(i))) != null) {
 			fromInclusive = i + 1;
 			toExclusive = j;
-		} else if ((sourceAnchor=isAnchorWithSource(nodes.get(j-1))) != null ) {
+		} else if ((sourceAnchor = isAnchorWithSource(nodes.get(j - 1))) != null) {
 			fromInclusive = i;
 			toExclusive = j - 1;
 		} else {
 			fromInclusive = i;
 			toExclusive = j;
-			//this is a safety check against missing links which 
-			//would be source anchors but they are missing <a> tag
-			if(!isAnchorWithImg(nodes.get(fromInclusive))){
+			// this is a safety check against missing links which
+			// would be source anchors but they are missing <a> tag
+			if (!isAnchorWithImg(nodes.get(fromInclusive))) {
 				fromInclusive++;
 			}
-			if(!isAnchorWithImg(nodes.get(toExclusive-1))){
+			if (!isAnchorWithImg(nodes.get(toExclusive - 1))) {
 				toExclusive--;
 			}
 			Main.errln("ERROR1! Cound not find Source Anchor among nodes bewteen i=" + i + " j=" + j);
 		}
-		if(sourceAnchor!=null)sourceURL = sourceAnchor.getAttribute("href");
-		processImagesOfSection(nodes, fromInclusive, toExclusive, sourceURL, hiddenVersion, lowQuality, prefix,isSaucyPost);
+		if (sourceAnchor != null)
+			sourceURL = sourceAnchor.getAttribute("href");
+		try {
+			processImagesOfSection(nodes, fromInclusive, toExclusive, sourceURL, hiddenVersion, lowQuality, prefix,
+					isSaucyPost);
+		} catch (final Exception e) {// lets swallow exceptions because Internet
+								// websites are hell
+			e.printStackTrace();
+		}
 
 	}
 
-	
-
 	private void processImagesOfSection(final List<?> nodes, final int fromInclusive, final int toExclusive,
-			 String sourceURL, final boolean hiddenVersion, final boolean lowQuality, final String prefix, final boolean isSaucyPost) {
+			String sourceURL, final boolean hiddenVersion, final boolean lowQuality, final String prefix,
+			final boolean isSaucyPost) {
 		final int countOfImages = toExclusive - fromInclusive;
 		Main.logln("count of images=" + countOfImages);
 		switch (countOfImages) {
 		case 0:
 			Main.errln("ERROR5! EQDBot");
 			return;
-		case 1://If the source is DeviantArt
-			//there can be only one image.
-			//If source is another website then 
-			//it could contain multiple images but
-			//we know that deviantArt shows 1 image at the time
-			if(!(nodes.get(fromInclusive) instanceof HtmlAnchor))break;//safety check in 
-			//case of unexpected page layout
-			final HtmlAnchor imgAnchor=(HtmlAnchor) nodes.get(fromInclusive);
-			
-			if(sourceURL==null){//watch out! missing link!
-				//maybe the link is at least preserved by image itself
-				sourceURL=imgAnchor.getAttribute("href");
+		case 1:// If the source is DeviantArt
+				// there can be only one image.
+				// If source is another website then
+				// it could contain multiple images but
+				// we know that deviantArt shows 1 image at the time
+			if (!(nodes.get(fromInclusive) instanceof HtmlAnchor))
+				break;// safety check in
+			// case of unexpected page layout
+			final HtmlAnchor imgAnchor = (HtmlAnchor) nodes.get(fromInclusive);
+
+			if (sourceURL == null) {// watch out! missing link!
+				// maybe the link is at least preserved by image itself
+				sourceURL = imgAnchor.getAttribute("href");
 			}
 			if (lowQuality) {
-				downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion, prefix,isSaucyPost);
-			} else if (visibilityFilterWithLog(imgAnchor, hiddenVersion,isSaucyPost)) {
+				downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion, prefix, isSaucyPost);
+			} else if (visibilityFilterWithLog(imgAnchor, hiddenVersion, isSaucyPost)) {
 				final DeviantArtBot deviantArtBot = new DeviantArtBot(bot);
 				try {
 					if (!deviantArtBot.download(prefix, sourceURL)) {
 						Main.logln("Downloading from DeviantArt failed! Switching to EQD!");
-						downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion, prefix, isSaucyPost);
+						downloadFromEqdPostImages(nodes, fromInclusive, toExclusive, hiddenVersion, prefix,
+								isSaucyPost);
 					}
 				} catch (final IOException e) {
 					Main.errln("ERROR6! EQDBot");
@@ -241,18 +251,23 @@ public class EQDBot {
 
 	private void downloadFromEqdPostImages(final List<?> nodes, int fromInclusive, final int toExclusive,
 			final boolean hiddenVersion, final String prefix, final boolean isSaucyPost) {
+
 		while (fromInclusive < toExclusive) {
+			try {
+				final HtmlAnchor aImage = (HtmlAnchor) nodes.get(fromInclusive);
+				if (visibilityFilterWithLog(aImage, hiddenVersion, isSaucyPost)) {
+					final String imgURL = aImage.getAttribute("href");
 
-			final HtmlAnchor aImage = (HtmlAnchor) nodes.get(fromInclusive);
-			if (visibilityFilterWithLog(aImage, hiddenVersion,isSaucyPost)) {
-				final String imgURL = aImage.getAttribute("href");
-
-				try {
-					Main.logln("\tDownloading from EQD: " + imgURL);
-					bot.getDownloader().saveImage(prefix, imgURL);
-				} catch (final IOException e) {
-					e.printStackTrace();
+					try {
+						Main.logln("\tDownloading from EQD: " + imgURL);
+						bot.getDownloader().saveImage(prefix, imgURL);
+					} catch (final IOException e) {
+						e.printStackTrace();
+					}
 				}
+			} catch (final Exception e) {// lets swallow exceptions because
+											// Internet websites are hell
+				e.printStackTrace();
 			}
 			fromInclusive++;
 		}
@@ -261,26 +276,27 @@ public class EQDBot {
 	////////////////////////////////////////////
 	// Down below are utility methods
 	////////////////////////////////////////////
-	/**Returns the anchor if it is anchor with source or null if it's not*/
+	/** Returns the anchor if it is anchor with source or null if it's not */
 	private HtmlAnchor isAnchorWithSource(final Object node) {
-		if (node instanceof HtmlAnchor) {//newer layout
-			final HtmlAnchor a =(HtmlAnchor) node;
-			final String parent=a.getParentNode().getNodeName();
-			if( parent.equals("b")){
+		if (node instanceof HtmlAnchor) {// newer layout
+			final HtmlAnchor a = (HtmlAnchor) node;
+			final String parent = a.getParentNode().getNodeName();
+			if (parent.equals("b")) {
 				return a;
 			}
-		}else if(node instanceof HtmlBold){//older layout
-			final HtmlBold b =(HtmlBold) node;
-			final String parent=b.getParentNode().getNodeName();
-			if(parent.equals("a")){
-				return (HtmlAnchor)b.getParentNode();
+		} else if (node instanceof HtmlBold) {// older layout
+			final HtmlBold b = (HtmlBold) node;
+			final String parent = b.getParentNode().getNodeName();
+			if (parent.equals("a")) {
+				return (HtmlAnchor) b.getParentNode();
 			}
 		}
 		return null;
 	}
-	
+
 	private boolean isAnchorWithImg(final Object node) {
-		if(node instanceof HtmlAnchor)return isAnchorWithImg((HtmlAnchor)node);
+		if (node instanceof HtmlAnchor)
+			return isAnchorWithImg((HtmlAnchor) node);
 		return false;
 	}
 
@@ -296,16 +312,22 @@ public class EQDBot {
 		final DomNode child = node.getFirstChild();
 		return child.getNodeName().equals("img");
 	}
-	private boolean visibilityFilterWithLog(final HtmlAnchor aImage, final boolean hiddenVersion, final boolean isSaucyPost) {
-		if(visibilityFilter(aImage, hiddenVersion,isSaucyPost)){
+
+	private boolean visibilityFilterWithLog(final HtmlAnchor aImage, final boolean hiddenVersion,
+			final boolean isSaucyPost) {
+		if (visibilityFilter(aImage, hiddenVersion, isSaucyPost)) {
 			return true;
-		}else{
+		} else {
 			Main.logln("Visibility filter rejected!");
 			return false;
 		}
 	}
-	/** returns true if anchor with image passes test 
-	 * @param isSaucyPost */
+
+	/**
+	 * returns true if anchor with image passes test
+	 * 
+	 * @param isSaucyPost
+	 */
 	private boolean visibilityFilter(final HtmlAnchor aImage, final boolean hiddenVersion, final boolean isSaucyPost) {
 		// hidden version = we are searching for <a> element that have no
 		// <img> inside them so the image is hidden
@@ -316,17 +338,19 @@ public class EQDBot {
 		// there is one child (img is the only possibility unless they change
 		// page layout)
 		// and it's visible version.
-		if(!isAnchorWithImg(aImage)){//safety check
+		if (!isAnchorWithImg(aImage)) {// safety check
 			return false;
 		}
-		//all images in saucy posts are treated as hidden.
-		final boolean isHiddenImage=isSaucyPost || !isAnchorWithVisibleImg(aImage);
-		return !(isHiddenImage^ hiddenVersion);
+		// all images in saucy posts are treated as hidden.
+		final boolean isHiddenImage = isSaucyPost || !isAnchorWithVisibleImg(aImage);
+		return !(isHiddenImage ^ hiddenVersion);
 	}
-	
-	private static final String SAUCY_ID="saucy";
+
+	private static final String SAUCY_ID = "saucy";
+
 	private boolean postFilter(final boolean isSaucyPost, final boolean hiddenVersion) {
-		if(isSaucyPost)return hiddenVersion;
+		if (isSaucyPost)
+			return hiddenVersion;
 		return true;
 	}
 
@@ -341,35 +365,35 @@ public class EQDBot {
 		// http://www.equestriadaily.com/2016/12/drawfriend-stuff-2117-art-compilation.html#more
 		/** parts that every URL has */
 		final String[] urlParts = postURL.split("/");
-		//let's cut off the extension like .html
-		final String urlLastPart=urlParts[urlParts.length - 1];
-		final String urlLastPartTruncated=urlLastPart.substring(0, urlLastPart.lastIndexOf('.'));
+		// let's cut off the extension like .html
+		final String urlLastPart = urlParts[urlParts.length - 1];
+		final String urlLastPartTruncated = urlLastPart.substring(0, urlLastPart.lastIndexOf('.'));
 		/** Words that make up the post title */
 		final String[] postParts = urlLastPartTruncated.split("-");
-		
-		//a safety check
+
+		// a safety check
 		for (int i = 0; i < postParts.length; i++) {
-			postParts[i]=postParts[i].toLowerCase();
+			postParts[i] = postParts[i].toLowerCase();
 		}
-		String id="unknown_id";
-		//now onto the work
+		String id = "unknown_id";
+		// now onto the work
 		for (int i = 0; i < postParts.length; i++) {
 			if (i + 1 < postParts.length && postParts[i].equals("drawfriend")) {
 				if (i + 2 < postParts.length && postParts[i + 1].equals("stuff")) {
 					// okay so we've got a sequence of 'drawfriend stuff'
 					// now it must be the ID or there is no ID at all
-					if(Utils.isInteger(postParts[i + 2])){
-						id=postParts[i + 2];
+					if (Utils.isInteger(postParts[i + 2])) {
+						id = postParts[i + 2];
 						break;
 					}
 
 				}
-			}else if(postParts[i].equals("saucy")){
-				id=SAUCY_ID;
+			} else if (postParts[i].equals("saucy")) {
+				id = SAUCY_ID;
 			}
 		}
 		return id;
-		
+
 	}
 
 }

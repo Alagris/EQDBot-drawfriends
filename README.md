@@ -93,3 +93,5 @@ CHANGELOG:
 - version 1.3.1
 	- in previous version there was one value modified for debugging which made it impossible to run in visible mode. This debugging leftover was fixed.
 	- a message with default startLink value will show at the termination of program.
+- version 1.4
+	- added extra mechanism (swallowing exceptions) for dealing with unexpected HTML "bugs". Now the bot won't crash but just pretend nothing happened and try to collect as much info as possible instead.
